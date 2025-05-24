@@ -5,32 +5,64 @@ function saveTransactions() {
 }
 
 function renderTransactions(filtered = transactions) {
-  const list = document.getElementById("transaction-list");
-  list.innerHTML = "";
+  const list = document.getElementById('transaction-list');
+  list.innerHTML = '';
   filtered.forEach((t, index) => {
-    const row = document.createElement("tr");
+    const row = document.createElement('tr');
     row.innerHTML = `
       <td>${t.category}</td>
       <td>${t.amount}</td>
       <td>${t.type}</td>
       <td>${t.date}</td>
-      <td>${t.note || ""}</td>
-      <td><button class="delete-btn" data-index="${index}">Delete</button></td>
+      <td>${t.note || ''}</td>
+      <td>
+        <button class="delete-btn" data-index="${index}">Delete</button>
+      </td>
+      <td>
+        <button class="pdf-btn" data-index="${index}">Download PDF</button>
+      </td>
     `;
     list.appendChild(row);
   });
 
-  document.querySelectorAll(".delete-btn").forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const index = this.getAttribute("data-index");
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const index = this.getAttribute('data-index');
       transactions.splice(index, 1);
       saveTransactions();
       renderTransactions();
     });
   });
 
+  document.querySelectorAll('.pdf-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const index = this.getAttribute('data-index');
+      const t = transactions[index];
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.text('Transaction Receipt', 70, 20);
+
+      doc.setFontSize(12);
+      doc.text(`Date: ${t.date}`, 20, 40);
+      doc.text(`Type: ${t.type}`, 20, 50);
+      doc.text(`Category: ${t.category}`, 20, 60);
+      doc.text(`Amount: #${t.amount}`, 20, 70);
+      doc.text(`Note: ${t.note || 'N/A'}`, 20, 80);
+
+      doc.setFontSize(10);
+      doc.text('Thank you for using Personal Finance Tracker.', 20, 100);
+
+      doc.save(`transaction-${index + 1}.pdf`);
+    });
+  });
+
   renderChart();
 }
+
+
 
 function addTransaction(e) {
   e.preventDefault();
