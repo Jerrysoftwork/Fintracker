@@ -1,98 +1,86 @@
-const form = document.getElementById("transaction-form");
-const tableBody = document.querySelector("#transaction-table tbody");
-const chartCanvas = document.getElementById("summary-chart");
-
-let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 
 function saveTransactions() {
-  localStorage.setItem("transactions", JSON.stringify(transactions));
+  localStorage.setItem('transactions', JSON.stringify(transactions));
 }
 
-function renderTransactions(data = transactions) {
-  tableBody.innerHTML = "";
-  data.forEach(tx => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${tx.date}</td>
-      <td>${tx.category}</td>
-      <td>${tx.type}</td>
-      <td>${tx.amount}</td>
-      <td>${tx.notes || ""}</td>
+function renderTransactions(filtered = transactions) {
+  const list = document.getElementById('transaction-list');
+  list.innerHTML = '';
+  filtered.forEach(t => {
+    const item = document.createElement('div');
+    item.className = 'transaction-item';
+    item.innerHTML = `
+      <span>${t.type}</span>
+      <span>${t.amount}</span>
+      <span>${t.date}</span>
+      <span>${t.category}</span>
+      <span>${t.note || ''}</span>
     `;
-    tableBody.appendChild(row);
+    list.appendChild(item);
   });
+  renderChart();
 }
 
-function updateChart() {
-  const income = transactions.filter(tx => tx.type === "income").reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
-  const expense = transactions.filter(tx => tx.type === "expense").reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+function addTransaction(e) {
+  e.preventDefault();
+  const amount = document.getElementById('amount').value;
+  const date = document.getElementById('date').value;
+  const category = document.getElementById('category').value;
+  const note = document.getElementById('note').value;
+  const type = document.getElementById('type').value;
+  transactions.push({ amount: parseFloat(amount), date, category, note, type });
+  saveTransactions();
+  renderTransactions();
+  document.getElementById('transaction-form').reset();
+}
 
-  new Chart(chartCanvas, {
-    type: "doughnut",
+function applyFilters() {
+  const catFilter = document.getElementById('filter-category').value.toLowerCase();
+  const dateFilter = document.getElementById('filter-date').value;
+  const filtered = transactions.filter(t => {
+    return (!catFilter || t.category.toLowerCase().includes(catFilter)) &&
+           (!dateFilter || t.date === dateFilter);
+  });
+  renderTransactions(filtered);
+}
+
+function resetFilters() {
+  document.getElementById('filter-category').value = '';
+  document.getElementById('filter-date').value = '';
+  renderTransactions();
+}
+
+function exportCSV() {
+  const rows = [['Type', 'Amount', 'Date', 'Category', 'Note'], ...transactions.map(t => [t.type, t.amount, t.date, t.category, t.note || ''])];
+  const csvContent = rows.map(e => e.join(",")).join("\n");
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'transactions.csv';
+  a.click();
+}
+
+function renderChart() {
+  const ctx = document.getElementById('chart').getContext('2d');
+  const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+  const expense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+
+  if (window.chartInstance) window.chartInstance.destroy();
+
+  window.chartInstance = new Chart(ctx, {
+    type: 'doughnut',
     data: {
-      labels: ["Income", "Expenses"],
+      labels: ['Income', 'Expense'],
       datasets: [{
         data: [income, expense],
-        backgroundColor: ["#28a745", "#dc3545"]
+        backgroundColor: ['#4caf50', '#f44336']
       }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false
     }
   });
 }
 
-form.addEventListener("submit", function(e) {
-  e.preventDefault();
+document.getElementById('transaction-form').addEventListener('submit', addTransaction);
 
-  const newTransaction = {
-    amount: form.amount.value,
-    date: form.date.value,
-    category: form.category.value,
-    notes: form.notes.value,
-    type: form.type.value
-  };
-
-  transactions.push(newTransaction);
-  saveTransactions();
-  renderTransactions();
-  updateChart();
-  form.reset();
-});
-
-function applyFilters() {
-  const filterCategory = document.getElementById("filter-category").value.toLowerCase();
-  const filterDate = document.getElementById("filter-date").value;
-
-  const filtered = transactions.filter(tx => {
-    return (
-      (!filterCategory || tx.category.toLowerCase().includes(filterCategory)) &&
-      (!filterDate || tx.date === filterDate)
-    );
-  });
-
-  renderTransactions(filtered);
-}
-
-function exportCSV() {
-  let csvContent = "data:text/csv;charset=utf-8,";
-  csvContent += "Date,Category,Type,Amount,Notes\n";
-
-  transactions.forEach(tx => {
-    const row = [tx.date, tx.category, tx.type, tx.amount, tx.notes || ""].join(",");
-    csvContent += row + "\n";
-  });
-
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", "transactions.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
-// Initialize
 renderTransactions();
-updateChart();
