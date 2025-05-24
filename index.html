@@ -1,43 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Personal Finance Tracker</title>
-  <link rel="stylesheet" href="stytle.css">
-</head>
-<body>
-  <div class="container">
-    <h1>Personal Finance Tracker</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Personal Finance Tracker</title>
+    <link rel="stylesheet" href="stytle.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Personal Finance Tracker</h1>
 
-    <canvas id="chart" width="400" height="200"></canvas>
-    
-    <form id="transaction-form">
-      <input type="number" id="amount" placeholder="Amount" required>
-      <input type="date" id="date" required>
-      <input type="text" id="category" placeholder="Category" required>
-      <input type="text" id="note" placeholder="Note (optional)">
-      <select id="type">
-        <option value="income">Income</option>
-        <option value="expense">Expense</option>
-      </select>
-      <button type="submit">Add Transaction</button>
-    </form>
+      <canvas id="chart" width="400" height="200"></canvas>
 
-    <div class="filters">
-      <input type="text" id="filter-category" placeholder="Filter by category">
-      <input type="date" id="filter-date">
-      <button onclick="applyFilters()">Apply Filters</button>
-      <button onclick="resetFilters()">Reset</button>
-      <button onclick="exportCSV()">Export CSV</button>
+      <form id="transaction-form">
+        <input type="number" id="amount" placeholder="Amount" required />
+        <input type="date" id="date" required />
+        <input type="text" id="category" placeholder="Category" required />
+        <input type="text" id="note" placeholder="Note (optional)" />
+        <select id="type">
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+        <button type="submit">Add Transaction</button>
+      </form>
+
+      <div class="filters">
+        <input
+          type="text"
+          id="filter-category"
+          placeholder="Filter by category"
+        />
+        <input type="date" id="filter-date" />
+        <button onclick="applyFilters()">Apply Filters</button>
+        <button onclick="resetFilters()" class="btn">Reset</button>
+        <button onclick="exportCSV()" class="btn">Export CSV</button>
+      </div>
+
+      <div class="table-container">
+        <table id="transaction-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Type</th>
+              <th>Date</th>
+              <th>Note</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="transaction-list"></tbody>
+        </table>
+      </div>
+
+      <div class="transactions" id="transaction-list"></div>
     </div>
 
-    <div class="transactions" id="transaction-list"></div>
-
-    
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="script.js"></script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+  </body>
 </html>

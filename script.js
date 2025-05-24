@@ -7,20 +7,32 @@ function saveTransactions() {
 function renderTransactions(filtered = transactions) {
   const list = document.getElementById('transaction-list');
   list.innerHTML = '';
-  filtered.forEach(t => {
-    const item = document.createElement('div');
-    item.className = 'transaction-item';
-    item.innerHTML = `
-      <span>${t.type}</span>
-      <span>${t.amount}</span>
-      <span>${t.date}</span>
-      <span>${t.category}</span>
-      <span>${t.note || ''}</span>
+  filtered.forEach((t, index) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${t.category}</td>
+      <td>${t.amount}</td>
+      <td>${t.type}</td>
+      <td>${t.date}</td>
+      <td>${t.note || ''}</td>
+      <td><button class="delete-btn" data-index="${index}">Delete</button></td>
     `;
-    list.appendChild(item);
+    list.appendChild(row);
   });
+
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const index = this.getAttribute('data-index');
+      transactions.splice(index, 1);
+      saveTransactions();
+      renderTransactions();
+    });
+  });
+
   renderChart();
 }
+
+
 
 function addTransaction(e) {
   e.preventDefault();
@@ -63,7 +75,9 @@ function exportCSV() {
 }
 
 function renderChart() {
-  const ctx = document.getElementById('chart').getContext('2d');
+  const canvas = document.getElementById('chart');
+
+  const ctx = canvas.getContext('2d');
   const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
   const expense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
 
@@ -77,9 +91,18 @@ function renderChart() {
         data: [income, expense],
         backgroundColor: ['#4caf50', '#f44336']
       }]
+    },
+    options: {
+      responsive: false,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
     }
   });
 }
+
 
 document.getElementById('transaction-form').addEventListener('submit', addTransaction);
 
