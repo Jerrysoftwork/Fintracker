@@ -124,4 +124,13 @@ button:hover {
   input, select, button {
     flex: 1 1 100%;
   }
+
+  #chart {
+  width: 500px !important;
+  height: 200px !important;
+  display: block;
+  max-width: 100%;
+  width: 100%;
+  margin: 30px auto;
+}
 }
